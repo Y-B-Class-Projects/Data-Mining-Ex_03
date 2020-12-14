@@ -56,10 +56,26 @@ def frequent_itemsets(filename, itemsets):
     for i in range(len(itemsets)):
         if count[i] >= MINSUP * filelength:
             freqitemsets += [itemsets[i]]
+    print(count) ################
     return freqitemsets
 
 
-def create_kplus1_itemsets(kitemsets, filename):
+# function to reduce items from k+1 itemsets, by checking support of k sub-items from k+1 items
+def reduceFrom_K_Plus_1_Itemsets(kitemsets, kplus1_itemsets, filename):
+    ret = []
+    for k_plus_1_item in kplus1_itemsets:
+        temp_k_itemsets = []
+        for k_item in kitemsets:
+            if set(k_item) <= set(k_plus_1_item):
+                temp_k_itemsets += [k_item]
+        if len(temp_k_itemsets) == len(frequent_itemsets(filename, temp_k_itemsets)): # the frequent_itemsets will remove itmes
+            # that not pass the minSupp
+            ret += [k_plus_1_item]
+    print(ret)  #################
+    return ret
+
+
+def create_kplus1_itemsets(kitemsets, kitemsetOriginal, filename):
     kplus1_itemsets = []
     for i in range(len(kitemsets) - 1):
         j = i + 1  # j is an index
@@ -69,21 +85,26 @@ def create_kplus1_itemsets(kitemsets, filename):
         while j < len(kitemsets) and kitemsets[i][:-1] == kitemsets[j][:-1]:
             kplus1_itemsets += [kitemsets[i] + [kitemsets[j][-1]]]
             j += 1
+    print(kplus1_itemsets) #################
+    kplus1_itemsetsOriginal = kplus1_itemsets
+    kplus1_itemsets = reduceFrom_K_Plus_1_Itemsets(kitemsetOriginal, kplus1_itemsets, filename)
+    print(frequent_itemsets(filename, kplus1_itemsets), kplus1_itemsets)  #################
     # checks which of the k+1 itemsets are frequent
-    return frequent_itemsets(filename, kplus1_itemsets)
+    return frequent_itemsets(filename, kplus1_itemsets), kplus1_itemsetsOriginal
 
 
 def create_1itemsets(filename):
     it = []
     for i in range(N):
         it += [[i]]
-    return frequent_itemsets(filename, it)
+    return frequent_itemsets(filename, it), it  # return frequent itemsets of it, and original it
 
 
 def minsup_itemsets(filename):
-    minsupsets = kitemsets = create_1itemsets(filename)
+    minsupsets = kitemsets, kitemsetOriginal = create_1itemsets(filename)
     while kitemsets != []:
-        kitemsets = create_kplus1_itemsets(kitemsets, filename)
+        print(kitemsets) #################
+        kitemsets, kitemsetOriginal = create_kplus1_itemsets(kitemsets, kitemsetOriginal, filename)
         minsupsets += kitemsets
     return minsupsets
 
