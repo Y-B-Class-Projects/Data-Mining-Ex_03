@@ -1,15 +1,15 @@
 import datetime
 
-import AssociationRules
-import source
+import OurAssociationRules
+import OriginalAssociationRules
 
-source.createfile(10000, "itemsets.txt")
+OriginalAssociationRules.createfile(1000, "itemsets.txt")
 print("itemsets file created\n")
 
 t1 = datetime.datetime.now()
 
 
-res1 = AssociationRules.minsup_itemsets("itemsets.txt", True)
+res1 = OurAssociationRules.minsup_itemsets("itemsets.txt", True)
 t2 = datetime.datetime.now()
 
 print([r[0] for r in res1])
@@ -19,7 +19,7 @@ print("Our: ",Our)
 
 
 t1 = datetime.datetime.now()
-res2 = source.minsup_itemsets("itemsets.txt")
+res2 = OriginalAssociationRules.minsup_itemsets("itemsets.txt")
 t2 = datetime.datetime.now()
 
 print(res2)
