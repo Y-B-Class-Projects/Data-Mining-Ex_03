@@ -23,19 +23,8 @@ def createfile(m, filename):
 
 # Returns true iff all of smallitemset items are in bigitemset (the itemsets are sorted lists)
 def is_in(smallitemset, bigitemset):
-    '''
-
-    :param smallitemset:
-    :type smallitemset:
-    :param bigitemset:
-    :type bigitemset:
-    :return:
-    :rtype: bool
-    '''
-    # print("smallitemset: ", smallitemset,"bigitemset: ",bigitemset)
     s = b = 0  # s = index of smallitemset, b = index of bigitemset
     while s < len(smallitemset) and b < len(bigitemset):
-        # print("S: ", s, "B: ",b)
         if smallitemset[s] > bigitemset[b]:
             b += 1
         elif smallitemset[s] < bigitemset[b]:
@@ -49,7 +38,7 @@ def is_in(smallitemset, bigitemset):
 # Returns a list of itemsets (from the list itemsets) that are frequent
 # in the itemsets in filename
 def frequent_itemsets(filename, itemsets):
-    # print("itemsets",itemsets)
+    #print("B: ",itemsets)
     f = open(filename, "r")
     filelength = 0  # filelength is the no. of itemsets in the file. we
     # use it to calculate the support of an itemset
@@ -60,59 +49,46 @@ def frequent_itemsets(filename, itemsets):
         line = line.split()  # splits line to separate strings
         for i in range(len(line)):
             line[i] = int(line[i])  # converts line to integers
-        # print(itemsets)
         for i in range(len(itemsets)):
-            if is_in(itemsets[i][0], line):
+            if is_in(itemsets[i], line):
                 count[i] += 1
         line = f.readline()
     f.close()
     freqitemsets = []
-    All = []
     for i in range(len(itemsets)):
         if count[i] >= MINSUP * filelength:
-            freqitemsets += [[itemsets[i][0], count[i] / filelength]]
-        All += [[itemsets[i][0], count[i] / filelength]]
-    #print("All ",[r[0] for r in All])
-    return freqitemsets, All
+            itemsets[i] += [count[i]/filelength]
+            freqitemsets += [itemsets[i]]
+    #print("E: ", freqitemsets)
+    return freqitemsets
 
 
-# function to reduce items from k+1 itemsets, by checking support of k sub-items from k+1 items
-def reduceFrom_K_Plus_1_Itemsets(kitemsets, kplus1_itemsets, filename):
-    ret = []
-    for k_plus_1_item in kplus1_itemsets:
-        isAdd = True
-
-        #print(kitemsets)
-        for k_item in kitemsets:
-            if is_in(k_item[0], k_plus_1_item[0]):
-                if k_item[1] <= MINSUP:
-                    print("B")
-                    isAdd = False
-                    break
-
-        # temp_k_itemsets = [k_item for k_item in kitemsets if is_in(k_item[0], k_plus_1_item[0])]
-
-        if isAdd:
-            ret += [k_plus_1_item]
-
-    return ret
-
-
-def create_kplus1_itemsets(kitemsets, AllKitemset, filename, isImprove):
+def create_kplus1_itemsets(kitemsets, filename):
     kplus1_itemsets = []
+    #print("kitemsets: ",kitemsets)
     for i in range(len(kitemsets) - 1):
         j = i + 1  # j is an index
         # compares all pairs, without the last item, (note that the lists are sorted)
         # and if they are equal than adds the last item of kitemsets[j] to kitemsets[i]
         # in order to create k+1 itemset
-        while j < len(kitemsets) and kitemsets[i][0][:-1] == kitemsets[j][0][:-1]:
-            kplus1_itemsets += [[kitemsets[i][0] + [kitemsets[j][0][-1]], None]]
+        while j < len(kitemsets) and kitemsets[i][:-2] == kitemsets[j][:-2]:
+            item = kitemsets[i][0:-1] + [kitemsets[j][-2]]
+            #print("item:", item)
+            isAdd = True
+            for index in range(len(item)):
+                sub = item[:index] + item[index + 1:]
+                #print("index: ",index,"sub: ", sub, "kitemsets: ", [k[:-1] for k in kitemsets])
+                if sub not in [k[:-1] for k in kitemsets]:
+                    isAdd = False
+                    break
+            #print("isAdd: ", isAdd)
+            if isAdd:
+                #print("+= ", item)
+                kplus1_itemsets += [item]
             j += 1
-    # print(kplus1_itemsets) #################
-    kplus1_itemsetsOriginal = kplus1_itemsets
-    if isImprove == True:
-        kplus1_itemsets = reduceFrom_K_Plus_1_Itemsets(AllKitemset, kplus1_itemsets, filename)
-    # print("after: ",frequent_itemsets(filename, kplus1_itemsets,True), "be..: ", kplus1_itemsets)  #################
+
+    #print("kplus1_itemsets: ", kplus1_itemsets)
+
     # checks which of the k+1 itemsets are frequent
     return frequent_itemsets(filename, kplus1_itemsets)
 
@@ -120,35 +96,20 @@ def create_kplus1_itemsets(kitemsets, AllKitemset, filename, isImprove):
 def create_1itemsets(filename):
     it = []
     for i in range(N):
-        it += [[[i], None]]
-    return frequent_itemsets(filename, it)  # return frequent itemsets of it, and original it
+        it += [[i]]
+    return frequent_itemsets(filename, it)
 
 
-def minsup_itemsets(filename, isImprove):
-    k = 1
-    kitemsets, AllKitemset = create_1itemsets(filename)
+def minsup_itemsets(filename):
+    minsupsets = kitemsets = create_1itemsets(filename)
 
-    minsupsets = kitemsets
     while kitemsets != []:
-        # print(kitemsets)
-        kitemsets, AllKitemset = create_kplus1_itemsets(kitemsets, AllKitemset, filename, isImprove)
+        kitemsets = create_kplus1_itemsets(kitemsets, filename)
+
         minsupsets += kitemsets
     return minsupsets
 
-# createfile(10000, "itemsets.txt")
-
-
-# t3 = datetime.datetime.now()
-
-# print(minsup_itemsets("itemsets.txt" ,True))
-
-# t4 = datetime.datetime.now()
-# print("True", t4-t3)
-
-
 # t1 = datetime.datetime.now()
-
-# print(minsup_itemsets("itemsets.txt" ,False))
-
+# print(minsup_itemsets("itemsets.txt"))
 # t2 = datetime.datetime.now()
 # print("False",t2-t1)
