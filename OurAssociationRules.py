@@ -38,7 +38,6 @@ def is_in(smallitemset, bigitemset):
 # Returns a list of itemsets (from the list itemsets) that are frequent
 # in the itemsets in filename
 def frequent_itemsets(filename, itemsets):
-    #print("B: ",itemsets)
     f = open(filename, "r")
     filelength = 0  # filelength is the no. of itemsets in the file. we
     # use it to calculate the support of an itemset
@@ -59,13 +58,11 @@ def frequent_itemsets(filename, itemsets):
         if count[i] >= MINSUP * filelength:
             itemsets[i] += [count[i]/filelength]
             freqitemsets += [itemsets[i]]
-    #print("E: ", freqitemsets)
     return freqitemsets
 
 
 def create_kplus1_itemsets(kitemsets, filename):
     kplus1_itemsets = []
-    #print("kitemsets: ",kitemsets)
     for i in range(len(kitemsets) - 1):
         j = i + 1  # j is an index
         # compares all pairs, without the last item, (note that the lists are sorted)
@@ -73,21 +70,15 @@ def create_kplus1_itemsets(kitemsets, filename):
         # in order to create k+1 itemset
         while j < len(kitemsets) and kitemsets[i][:-2] == kitemsets[j][:-2]:
             item = kitemsets[i][0:-1] + [kitemsets[j][-2]]
-            #print("item:", item)
             isAdd = True
             for index in range(len(item)):
                 sub = item[:index] + item[index + 1:]
-                #print("index: ",index,"sub: ", sub, "kitemsets: ", [k[:-1] for k in kitemsets])
                 if sub not in [k[:-1] for k in kitemsets]:
                     isAdd = False
                     break
-            #print("isAdd: ", isAdd)
             if isAdd:
-                #print("+= ", item)
                 kplus1_itemsets += [item]
             j += 1
-
-    #print("kplus1_itemsets: ", kplus1_itemsets)
 
     # checks which of the k+1 itemsets are frequent
     return frequent_itemsets(filename, kplus1_itemsets)
@@ -109,7 +100,7 @@ def minsup_itemsets(filename):
         minsupsets += kitemsets
     return minsupsets
 
-# t1 = datetime.datetime.now()
-# print(minsup_itemsets("itemsets.txt"))
-# t2 = datetime.datetime.now()
-# print("False",t2-t1)
+
+print(minsup_itemsets("itemsets.txt"))
+
+
