@@ -101,7 +101,7 @@ def minsup_itemsets(filename):
         minsupsets += kitemsets
     return minsupsets
 
-
+createfile(1000, "itemsets.txt")
 print(minsup_itemsets("itemsets.txt"))
 
 
