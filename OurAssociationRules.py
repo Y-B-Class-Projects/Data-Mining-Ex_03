@@ -1,5 +1,6 @@
+# Baruch Baksht 211302088 Yisrael Rolnik 206672057
+
 import random
-import datetime
 
 N = 25  # no. of attributes
 MINSUP = 0.15
